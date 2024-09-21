@@ -2,10 +2,10 @@ version: 0.2
 
 env:
   parameter-store:
-    DOCKER_REGISTRY_USERNAME: "/cicd/docker-credentials/username"
-    DOCKER_REGISTRY_PASSWORD: "/cicd/docker-credentials/password"
-    DOCKER_REGISTRY_URL: "/cicd/docker-registry/url"
-    SONAR_TOKEN: "/cicd/sonar/sonar-token"
+    DOCKER_REGISTRY_USERNAME: /cloud-cicd/docker-credentials/username
+    DOCKER_REGISTRY_PASSWORD: /cloud-cicd/docker-credentials/password
+    DOCKER_REGISTRY_URL: /cloud-cicd/docker-registry/url
+    SONAR_TOKEN: /cicd/sonar/sonar-token
 
 phases:
   install:
@@ -13,58 +13,45 @@ phases:
       python: 3.11
       java: corretto17
     commands:
-      - echo "Install phase: Initial setup completed."
+      - echo "Installing SonarQube scanner..."
+      - wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856-linux.zip
+      - unzip sonar-scanner-cli-4.8.0.2856-linux.zip
+      - export PATH=$PATH:$PWD/sonar-scanner-4.8.0.2856-linux/bin
 
   pre_build:
     commands:
-      - echo "Pre-build phase: Installing dependencies..."
+      - echo "Installing dependencies..."
       - echo "Performing Trivy file scan before building the image..."
+      # Uncomment the following lines for Trivy or OWASP Dependency Check
       - wget https://github.com/aquasecurity/trivy/releases/download/v0.19.2/trivy_0.19.2_Linux-64bit.tar.gz
       - tar zxvf trivy_0.19.2_Linux-64bit.tar.gz
       - export PATH=$PATH:$PWD
-      - ./trivy filesystem --exit-code 0 --no-progress . >> trivyfilescan.txt
-      - echo "Downloading and installing OWASP Dependency-Check..."
+      - trivy filesystem --exit-code 0 --no-progress . >> trivyfilescan.txt
       - wget https://github.com/jeremylong/DependencyCheck/releases/download/v7.0.2/dependency-check-7.0.2-release.zip
       - unzip dependency-check-7.0.2-release.zip
-      - echo "Installing SonarQube Scanner..."
-      - export SONAR_SCANNER_VERSION=4.7.0.2747
-      - export SONAR_SCANNER_HOME=$HOME/.sonar/sonar-scanner-$SONAR_SCANNER_VERSION-linux
-      - curl --create-dirs -sSLo $HOME/.sonar/sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-$SONAR_SCANNER_VERSION-linux.zip
-      - unzip -o $HOME/.sonar/sonar-scanner.zip -d $HOME/.sonar/
-      - export PATH=$SONAR_SCANNER_HOME/bin:$PATH
-      - export SONAR_SCANNER_OPTS="-server"
 
   build:
     commands:
-      - echo "Build phase: Running tests..."
+      - echo "Running tests..."
       - echo "Building Docker image..."
+      # Uncomment the following lines for Docker commands
       - echo "$DOCKER_REGISTRY_PASSWORD" | docker login -u "$DOCKER_REGISTRY_USERNAME" --password-stdin "$DOCKER_REGISTRY_URL"
       - docker build -t "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/swiggy:latest" .
       - docker push "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/swiggy:latest"
 
-  post_build:
-    commands:
-      - echo "Post-build phase: Performing Trivy image scan after building the image..."
-      - ./trivy image "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/swiggy:latest" >> trivyimage.txt
-      - echo "Running OWASP Dependency-Check scan..."
-      - cd dependency-check/bin
-      - ./dependency-check.sh --scan . --format ALL
-      - cd ../../
-      - echo "Running SonarQube analysis..."
-      - sonar-scanner \
-          -Dsonar.projectKey=Swiggy \
-          -Dsonar.sources=. \
-          -Dsonar.host.url=http://13.233.110.101:9000 \
-          -Dsonar.login="$SONAR_TOKEN"
-      - echo "Build completed successfully!"
-      - |
-        echo "Sending build status via email..."
-        aws ses send-email \
-          --from "accgo22@gmail.com" \
-          --destination "ToAddresses=accgo22@gmail.com" \
-          --message "Subject={Data=CodeBuild Status: $CODEBUILD_BUILD_ID,Charset=utf8},Body={Text={Data=Build status: $CODEBUILD_BUILD_STATUS,Charset=utf8}}" \
-          --region "ap-south-1"
+      - echo "Running SonarQube scan..."
+      - sonar-scanner -Dsonar.projectKey=Swiggy -Dsonar.sources=. -Dsonar.host.url=http://44.204.47.142:9000 -Dsonar.login="$SONAR_TOKEN"
 
+post_build:
+  commands:
+    - echo "Sending build status email..."
+    - >
+      aws ses send-email
+      --from "accgo22@gmail.com"
+      --destination '{"ToAddresses":["accgo22@gmail.com"]}'
+      --message '{"Subject": {"Data": "CodeBuild Status: '$CODEBUILD_BUILD_ID'", "Charset": "UTF-8"}, "Body": {"Text": {"Data": "Build status: '$CODEBUILD_BUILD_STATUS'", "Charset": "UTF-8"}}}'
+      --region "us-east-1"
 artifacts:
   files:
-    - '**/*'
+    - appspec.yml
+    - '**/*'  # This will include all files in the directory for upload
