@@ -50,7 +50,7 @@ post_build:
       --from "accgo22@gmail.com"
       --destination '{"ToAddresses":["accgo22@gmail.com"]}'
       --message '{"Subject": {"Data": "CodeBuild Status: '$CODEBUILD_BUILD_ID'", "Charset": "UTF-8"}, "Body": {"Text": {"Data": "Build status: '$CODEBUILD_BUILD_STATUS'", "Charset": "UTF-8"}}}'
-      --region "us-east-1"
+      --region "ap-south-1"
 artifacts:
   files:
     - appspec.yml
