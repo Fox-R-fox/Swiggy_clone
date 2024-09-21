@@ -48,7 +48,11 @@ phases:
       - ./dependency-check.sh --scan . --format ALL
       - echo "Build completed successfully!"
       - echo "Running SonarQube analysis..."
-      - sonar-scanner -Dsonar.projectKey=swiggy -Dsonar.sources=. -Dsonar.host.url=http://13.233.110.101:9000/ -Dsonar.login="$SONAR_TOKEN"
+      - sonar-scanner \
+          -Dsonar.projectKey=Swiggy \
+          -Dsonar.sources=. \
+          -Dsonar.host.url=http://13.233.110.101:9000 \
+          -Dsonar.login="$SONAR_TOKEN"
       - echo "Sending build status via email..."
       - aws ses send-email \
           --from "accgo22@gmail.com" \
