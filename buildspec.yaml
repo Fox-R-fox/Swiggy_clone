@@ -57,12 +57,12 @@ phases:
           -Dsonar.host.url=http://13.233.110.101:9000 \
           -Dsonar.login="$SONAR_TOKEN"
       - echo "Build completed successfully!"
-      - echo "Sending build status via email..."
       - |
+        echo "Sending build status via email..."
         aws ses send-email \
           --from "accgo22@gmail.com" \
           --destination "ToAddresses=accgo22@gmail.com" \
-          --message "Subject={Data='CodeBuild Status: $CODEBUILD_BUILD_ID',Charset=utf8},Body={Text={Data='Build status: $CODEBUILD_BUILD_STATUS',Charset=utf8}}" \
+          --message "Subject={Data=CodeBuild Status: $CODEBUILD_BUILD_ID,Charset=utf8},Body={Text={Data=Build status: $CODEBUILD_BUILD_STATUS,Charset=utf8}}" \
           --region "ap-south-1"
 
 artifacts:
