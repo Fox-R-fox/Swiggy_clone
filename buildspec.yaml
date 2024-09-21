@@ -39,8 +39,8 @@ post_build:
     - echo "Sending build status email..."
     - aws ses send-email \
         --from "accgo22@gmail.com" \
-        --destination "ToAddresses=accgo22@gmail.com" \
-        --message "Subject={Data=CodeBuild Status: $CODEBUILD_BUILD_ID,Charset=utf8},Body={Text={Data=Build status: $CODEBUILD_BUILD_STATUS,Charset=utf8}}" \
+        --destination '{"ToAddresses":["accgo22@gmail.com"]}' \
+        --message '{"Subject": {"Data": "CodeBuild Status: '$CODEBUILD_BUILD_ID'", "Charset": "UTF-8"}, "Body": {"Text": {"Data": "Build status: '$CODEBUILD_BUILD_STATUS'", "Charset": "UTF-8"}}}' \
         --region "us-east-1"
 
 artifacts:
