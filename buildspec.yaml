@@ -42,8 +42,7 @@ phases:
   post_build:
     commands:
       - echo "Performing Trivy image scan after building the image..."
-      - aws ses send-email --from "accgo22@gmail.com" --to "accgo22@gmail.com" --subject "CodeBuild Status: $CODEBUILD_BUILD_ID" --text "Build status: $CODEBUILD_BUILD_STATUS" --region "us-east-1" 
-
+      - aws ses send-email --from "accgo22@gmail.com" --to "accgo22@gmail.com" --subject "CodeBuild Status: $CODEBUILD_BUILD_ID" --text "Build status: $CODEBUILD_BUILD_STATUS" --region "us-east-1"
       - trivy image "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/swiggy:latest" >> trivyimage.txt
       - echo "Running OWASP Dependency-Check scan..."
       - cd dependency-check/bin
