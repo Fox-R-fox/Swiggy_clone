@@ -43,7 +43,7 @@ phases:
                       -Dsonar.host.url=http://13.233.110.101:9000 \
                       -Dsonar.login=$SONAR_TOKEN
 
-post_build:$SONAR_TOKEN
+post_build:
   commands:
     - echo "Sending build status email..."
     - >
