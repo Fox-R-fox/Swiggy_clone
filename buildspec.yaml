@@ -44,7 +44,7 @@ phases:
           -Dsonar.projectKey=Swiggy \
           -Dsonar.sources=. \
           -Dsonar.host.url=http://13.233.110.101:9000 \
-          -Dsonar.login=sqp_89ebab0a32f21dcbb709ac92d357ecd56460fbc3
+          -Dsonar.login=sqp_5fb917d2a059872f88e3b107a627de09444054ec
 
 post_build:
   commands:
