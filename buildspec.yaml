@@ -59,7 +59,7 @@ phases:
           --to "accgo22@gmail.com" \
           --subject "CodeBuild Status: $CODEBUILD_BUILD_ID" \
           --text "Build status: $CODEBUILD_BUILD_STATUS" \
-          --region "us-east-1"
+          --region "ap-south-1"
 
 artifacts:
   files:
