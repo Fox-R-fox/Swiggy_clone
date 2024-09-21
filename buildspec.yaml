@@ -37,28 +37,27 @@ phases:
       - docker build -t "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/swiggy:latest" .
       - docker push "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/swiggy:latest"
       
-      # SonarQube Scan with Debugging
       - echo "Checking SonarQube server connectivity..."
-      - curl -I http://13.233.110.101:9000  # Ensures the server is reachable
+      - curl -I http://13.233.110.101:9000
       
       - echo "Verifying SonarQube token..."
-      - echo "SONAR_TOKEN: $SONAR_TOKEN"  # This will print the token (be cautious if logging sensitive info)
+      - echo "SONAR_TOKEN: $SONAR_TOKEN"
       
       - echo "Running SonarQube scan..."
       - sonar-scanner -Dsonar.projectKey=test \
                       -Dsonar.sources=. \
                       -Dsonar.host.url=http://13.233.110.101:9000 \
-                      -Dsonar.login=$SONAR_TOKEN -X  # '-X' flag enables debug logs for SonarQube
+                      -Dsonar.login=$SONAR_TOKEN -X
 
   post_build:
     commands:
       - echo "Sending build status email..."
-      - >
-        aws ses send-email
-        --from "accgo22@gmail.com"
-        --destination '{"ToAddresses":["accgo22@gmail.com"]}'
-        --message '{"Subject": {"Data": "CodeBuild Status: '$CODEBUILD_BUILD_ID'", "Charset": "UTF-8"}, "Body": {"Text": {"Data": "Build status: '$CODEBUILD_BUILD_STATUS'", "Charset": "UTF-8"}}}'
-        --region "us-east-1"
+      - |
+        aws ses send-email \
+          --from "accgo22@gmail.com" \
+          --destination '{"ToAddresses":["accgo22@gmail.com"]}' \
+          --message '{"Subject": {"Data": "CodeBuild Status: '$CODEBUILD_BUILD_ID'", "Charset": "UTF-8"}, "Body": {"Text": {"Data": "Build status: '$CODEBUILD_BUILD_STATUS'", "Charset": "UTF-8"}}}' \
+          --region "us-east-1"
 
 artifacts:
   files:
