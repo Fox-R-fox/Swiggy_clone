@@ -12,10 +12,12 @@ phases:
     runtime-versions:
       python: 3.11
       java: corretto17
+    commands:
+      - echo "Install phase: Initial setup completed."
 
   pre_build:
     commands:
-      - echo "Installing dependencies..."
+      - echo "Pre-build phase: Installing dependencies..."
       - echo "Performing Trivy file scan before building the image..."
       - wget https://github.com/aquasecurity/trivy/releases/download/v0.19.2/trivy_0.19.2_Linux-64bit.tar.gz
       - tar zxvf trivy_0.19.2_Linux-64bit.tar.gz
@@ -24,6 +26,7 @@ phases:
       - echo "Downloading and installing OWASP Dependency-Check..."
       - wget https://github.com/jeremylong/DependencyCheck/releases/download/v7.0.2/dependency-check-7.0.2-release.zip
       - unzip dependency-check-7.0.2-release.zip
+      - echo "Installing SonarQube Scanner..."
       - export SONAR_SCANNER_VERSION=4.7.0.2747
       - export SONAR_SCANNER_HOME=$HOME/.sonar/sonar-scanner-$SONAR_SCANNER_VERSION-linux
       - curl --create-dirs -sSLo $HOME/.sonar/sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-$SONAR_SCANNER_VERSION-linux.zip
@@ -33,7 +36,7 @@ phases:
 
   build:
     commands:
-      - echo "Running tests..."
+      - echo "Build phase: Running tests..."
       - echo "Building Docker image..."
       - echo "$DOCKER_REGISTRY_PASSWORD" | docker login -u "$DOCKER_REGISTRY_USERNAME" --password-stdin "$DOCKER_REGISTRY_URL"
       - docker build -t "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/swiggy:latest" .
@@ -41,24 +44,24 @@ phases:
 
   post_build:
     commands:
-      - echo "Performing Trivy image scan after building the image..."
+      - echo "Post-build phase: Performing Trivy image scan after building the image..."
       - ./trivy image "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/swiggy:latest" >> trivyimage.txt
       - echo "Running OWASP Dependency-Check scan..."
       - cd dependency-check/bin
       - ./dependency-check.sh --scan . --format ALL
-      - echo "Build completed successfully!"
+      - cd ../../
       - echo "Running SonarQube analysis..."
       - sonar-scanner \
           -Dsonar.projectKey=Swiggy \
           -Dsonar.sources=. \
           -Dsonar.host.url=http://13.233.110.101:9000 \
           -Dsonar.login="$SONAR_TOKEN"
+      - echo "Build completed successfully!"
       - echo "Sending build status via email..."
       - aws ses send-email \
           --from "accgo22@gmail.com" \
-          --to "accgo22@gmail.com" \
-          --subject "CodeBuild Status: $CODEBUILD_BUILD_ID" \
-          --text "Build status: $CODEBUILD_BUILD_STATUS" \
+          --destination "ToAddresses=accgo22@gmail.com" \
+          --message "Subject={Data=CodeBuild Status: $CODEBUILD_BUILD_ID,Charset=utf8},Body={Text={Data=Build status: $CODEBUILD_BUILD_STATUS,Charset=utf8}}" \
           --region "ap-south-1"
 
 artifacts:
