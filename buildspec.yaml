@@ -22,7 +22,6 @@ phases:
     commands:
       - echo "Installing dependencies..."
       - echo "Performing Trivy file scan before building the image..."
-      # Uncomment the following lines for Trivy or OWASP Dependency Check
       - wget https://github.com/aquasecurity/trivy/releases/download/v0.19.2/trivy_0.19.2_Linux-64bit.tar.gz
       - tar zxvf trivy_0.19.2_Linux-64bit.tar.gz
       - export PATH=$PATH:$PWD
@@ -34,17 +33,15 @@ phases:
     commands:
       - echo "Running tests..."
       - echo "Building Docker image..."
-      # Uncomment the following lines for Docker commands
       - echo "$DOCKER_REGISTRY_PASSWORD" | docker login -u "$DOCKER_REGISTRY_USERNAME" --password-stdin "$DOCKER_REGISTRY_URL"
       - docker build -t "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/swiggy:latest" .
       - docker push "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/swiggy:latest"
       
       - echo "Running SonarQube scan..."
-      - sonar-scanner \
-          -Dsonar.projectKey=Swiggy \
-          -Dsonar.sources=. \
-          -Dsonar.host.url=http://13.233.110.101:9000 \
-          -Dsonar.login=sqp_5fb917d2a059872f88e3b107a627de09444054ec
+      - sonar-scanner -Dsonar.projectKey=Swiggy \
+                      -Dsonar.sources=. \
+                      -Dsonar.host.url=http://13.233.110.101:9000 \
+                      -Dsonar.login=$SONAR_TOKEN
 
 post_build:
   commands:
@@ -59,4 +56,4 @@ post_build:
 artifacts:
   files:
     - appspec.yml
-    - '**/*'  # This will include all files in the directory for upload
+    - '**/*'
