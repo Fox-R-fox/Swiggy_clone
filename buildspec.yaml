@@ -49,15 +49,13 @@ phases:
       - echo "Build completed successfully!"
       - echo "Running SonarQube analysis..."
       - sonar-scanner -Dsonar.projectKey=swiggy -Dsonar.sources=. -Dsonar.host.url=http://13.233.110.101:9000/ -Dsonar.login=$SONAR_TOKEN
-
-post_build:
-  commands:
-    - aws ses send-email \
-        --from "accgo22@gmail.com" \
-        --to "accgo22@gmail.com" \
-        --subject "CodeBuild Status: $CODEBUILD_BUILD_ID" \
-        --text "Build status: $CODEBUILD_BUILD_STATUS" \
-        --region "us-east-1"
+      - echo "Sending build status via email..."
+      - aws ses send-email \
+          --from "accgo22@gmail.com" \
+          --to "accgo22@gmail.com" \
+          --subject "CodeBuild Status: $CODEBUILD_BUILD_ID" \
+          --text "Build status: $CODEBUILD_BUILD_STATUS" \
+          --region "us-east-1"
 
 artifacts:
   files:
