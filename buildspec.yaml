@@ -33,6 +33,13 @@ phases:
       # - echo "$DOCKER_REGISTRY_PASSWORD" | docker login -u "$DOCKER_REGISTRY_USERNAME" --password-stdin "$DOCKER_REGISTRY_URL"
       # - docker build -t "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/swiggy:latest" .
       # - docker push "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/swiggy:latest"
+      
+      - echo "Running SonarQube scan..."
+      - sonar-scanner \
+          -Dsonar.projectKey=Swiggy \
+          -Dsonar.sources=. \
+          -Dsonar.host.url=http://44.204.47.142:9000 \
+          -Dsonar.login=sqp_8a726018f19aaef1f20d45bc428d297569d7d65f
 
 post_build:
   commands:
