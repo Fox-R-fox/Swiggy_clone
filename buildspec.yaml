@@ -38,12 +38,12 @@ phases:
       - docker push "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/swiggy:latest"
       
       - echo "Running SonarQube scan..."
-      - sonar-scanner -Dsonar.projectKey=Swiggy \
+      - sonar-scanner -Dsonar.projectKey=test \
                       -Dsonar.sources=. \
                       -Dsonar.host.url=http://13.233.110.101:9000 \
                       -Dsonar.login=$SONAR_TOKEN
 
-post_build:
+post_build:$SONAR_TOKEN
   commands:
     - echo "Sending build status email..."
     - >
